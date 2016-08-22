@@ -3,6 +3,10 @@ Broccoli-materialize
 
 Materialize [http://materializecss.com/] has a weird way of setting up their distro that basically makes it impossible to use for amd, so after I made it work in my project I decided to make a plugin to make my brocfile a little less ugly.
 
+### Install
+`npm install --save-dev broccoli-materialize`
+
+### Usage in Brocfile.js
 ```
 var path = require('path')
 var Funnel = require('broccoli-funnel');
@@ -32,6 +36,7 @@ This will generate a file structure like so:
         ...
 ```
 
+### RequireJS config
 I'm using this with amd modules, and I had to modify my require config like so:
 ```
 window.require = {
