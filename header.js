@@ -7,7 +7,8 @@
             var e = {};
             var args = Array.prototype.slice.apply(arguments);
             args = [e].concat(args);
-            return factory.apply(null, args);
+            factory.apply(null, args);
+            return e.Materialize;
         });
     } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
         var args = moduleNames.map(function (name) {
@@ -15,6 +16,7 @@
         });
         args = [exports].concat(args);
         factory.apply(null, args);
+        return exports.Materialize;
     } else {
         // Browser globals
         var args = browserModuleNames.map(function (name) {
