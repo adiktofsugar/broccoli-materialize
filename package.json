@@ -1,12 +1,15 @@
 {
   "name": "broccoli-materialize",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Broccoli plugin for making materialize a umd module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["broccoli", "materialize"],
+  "keywords": [
+    "broccoli",
+    "materialize"
+  ],
   "author": "Sean McCollum <anincrediblyshortname@gmail.com>",
   "license": "ISC",
   "dependencies": {
