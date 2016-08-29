@@ -11,9 +11,9 @@ Materialize [http://materializecss.com/] has a weird way of setting up their dis
 var path = require('path')
 var Funnel = require('broccoli-funnel');
 var BroccoliMaterialize = require('broccoli-materialize');
+var findup = require('findup');
 
-var materializeRootPath = path.resolve(path.dirname(require.resolve('materialize-css')), '..')
-
+var materializeRootPath = findup.sync(require.resolve('materialize-css'), 'package.json');
 var materialize = new BroccoliMaterialize(materializeRootPath);
 materialize = new Funnel(materialize, {
     destDir: 'materialize'
@@ -30,6 +30,9 @@ This will generate a file structure like so:
         - jquery.easing.1.3.js
         - jquery.hammer.js
         - velocity.min.js
+        - date_picker
+            - picker.js
+            - picker.date.js
     - css
         ...
     - fonts
@@ -49,6 +52,8 @@ window.require = {
         "jquery.hammer": "/path/to/materialize/js/jquery.hammer",
         "velocity": "/path/to/materialize/js/velocity.min",
         "hammerjs": "/path/to/materialize/js/hammer.min",
+        "picker": "/path/to/materialize/js/date_picker/picker",
+        "picker.date": "/path/to/materialize/js/date_picker/picker.date",
         "materialize": "/path/to/materialize/js/materialize"
     }
 }

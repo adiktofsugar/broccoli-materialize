@@ -45,7 +45,86 @@ Materialize.prototype.build = function() {
         );
     });
 
-    //find gruntfile and get the order
+    var config = this.getGruntConcatConfig();
+    var concatConfig = config.dist;
+    var jsFilePaths = concatConfig.src;
+    var libraryPaths = [];
+    var srcPaths = [];
+    var jsPathsToIgnore = [
+        'initial.js'
+    ];
+    var jsPathsForLibrary = [
+        'jquery.easing',
+        'velocity.min.js',
+        'hammer.min.js',
+        'jquery.hammer.js',
+        'picker.js',
+        'picker.date.js'
+    ];
+    jsFilePaths.forEach((jsFilePath) => {
+        var shouldIgnore = jsPathsToIgnore.find((matcher) => {
+            return jsFilePath.match(matcher);
+        });
+        var shouldAddToLibrary = jsPathsForLibrary.find((matcher) => {
+            return jsFilePath.match(matcher);
+        });
+        if (shouldIgnore) return;
+        if (shouldAddToLibrary) {
+            libraryPaths.push(jsFilePath);
+        } else {
+            srcPaths.push(jsFilePath);
+        }
+    });
+
+    // write the library files to separate files
+    libraryPaths.forEach((filePath) => {
+        fs.copySync(
+            path.join(materializeRootPath, filePath),
+            path.join(this.outputPath, filePath)
+        )
+    });
+    
+    var replacements = {
+        MODULE_NAMES: JSON.stringify([
+            'jquery',
+            'jquery.easing',
+            'jquery.hammer',
+            'velocity',
+            'hammerjs',
+            'picker',
+            'picker.date'
+        ]),
+        BROWSER_MODULE_NAMES: JSON.stringify([
+            'jQuery',
+            'jqEasing',
+            'jqHammer',
+            'Velocity',
+            'Hammer',
+            'Picker',
+            'pickerDateLoaded'
+        ]),
+        FUNCTION_SIGNATURE: '(exports, jQuery, jqEasing, jqHammer, ' +
+            'Velocity, Hammer, Picker, pickerDateLoaded)'
+    };
+    var header = fs.readFileSync(path.join(__dirname, 'header.js'), 'utf-8');
+    header = header.replace(/__(.+?)__/g, function ($0, $1) {
+        return replacements[$1];
+    });
+    var footer = fs.readFileSync(path.join(__dirname, 'footer.js'), 'utf-8');
+
+    var output = header;
+    srcPaths.forEach((filePath) => {
+        output += "\n";
+        output += fs.readFileSync(path.join(materializeRootPath, filePath), 'utf-8');
+    });
+    output += "\n" + footer;
+    fs.writeFileSync(path.join(this.outputPath, 'js/materialize.js'), output);
+
+    console.log('==== Materialize build end ====');
+    return this;
+};
+Materialize.prototype.getGruntConcatConfig = function () {
+    var materializeRootPath = this.inputPaths[0];
     var gruntfilePath = path.join(materializeRootPath, 'Gruntfile.js');
     var gruntfile = fs.readFileSync(gruntfilePath, 'utf-8');
     var initConfigMatch = gruntfile.match(/grunt\.initConfig.*\(.*\{/);
@@ -94,62 +173,6 @@ Materialize.prototype.build = function() {
         throw e;
     }
     fs.unlinkSync(configFilePath);
-    var concatConfig = config.dist;
-    var jsFilePaths = concatConfig.src;
-    var libraryPaths = [];
-    var srcPaths = [];
-    var jsPathsToIgnore = [
-        'initial.js'
-    ];
-    var jsPathsForLibrary = [
-        'jquery.easing',
-        'velocity.min.js',
-        'hammer.min.js',
-        'jquery.hammer.js'
-    ];
-    jsFilePaths.forEach((jsFilePath) => {
-        var shouldIgnore = jsPathsToIgnore.find((matcher) => {
-            return jsFilePath.match(matcher);
-        });
-        var shouldAddToLibrary = jsPathsForLibrary.find((matcher) => {
-            return jsFilePath.match(matcher);
-        });
-        if (shouldIgnore) return;
-        if (shouldAddToLibrary) {
-            libraryPaths.push(jsFilePath);
-        } else {
-            srcPaths.push(jsFilePath);
-        }
-    });
-
-    // write the library files to separate files
-    libraryPaths.forEach((filePath) => {
-        fs.copySync(
-            path.join(materializeRootPath, filePath),
-            path.join(this.outputPath, filePath)
-        )
-    });
-    
-    var replacements = {
-        MODULE_NAMES: "['jquery', 'jquery.easing', 'jquery.hammer', 'velocity', 'hammerjs']",
-        BROWSER_MODULE_NAMES: "['jQuery', 'jqEasing', 'jqHammer', 'Velocity', 'Hammer']",
-        FUNCTION_SIGNATURE: '(exports, jQuery, jqEasing, jqHammer, Velocity, Hammer)'
-    };
-    var header = fs.readFileSync(path.join(__dirname, 'header.js'), 'utf-8');
-    header = header.replace(/__(.+?)__/g, function ($0, $1) {
-        return replacements[$1];
-    });
-    var footer = fs.readFileSync(path.join(__dirname, 'footer.js'), 'utf-8');
-
-    var output = header;
-    srcPaths.forEach((filePath) => {
-        output += "\n";
-        output += fs.readFileSync(path.join(materializeRootPath, filePath), 'utf-8');
-    });
-    output += "\n" + footer;
-    fs.writeFileSync(path.join(this.outputPath, 'js/materialize.js'), output);
-
-    console.log('==== Materialize build end ====');
-    return this;
+    return config;
 };
 module.exports = Materialize;
